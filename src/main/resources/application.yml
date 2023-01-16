@@ -1,0 +1,56 @@
+spring:
+  application:
+    name: test-r4j
+  main:
+    banner-mode: off
+
+management:
+  server:
+    base-path: /
+  endpoints.web:
+    exposure:
+      include: health,prometheus,metrics
+    base-path: /
+  endpoint.health.probes.enabled: true
+  health:
+    livenessState.enabled: true
+    readinessState.enabled: true
+  metrics:
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+        resilience4j.circuitbreaker.calls: true
+
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        failureRateThreshold: 50
+        slowCallRateThreshold: 100
+        slowCallDurationThreshold: 30000ms
+        permittedNumberOfCallsInHalfOpenState: 10
+        slidingWindowType: TIME_BASED
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 20
+        waitDurationInOpenState: 5000ms
+    metrics:
+      enabled: true
+    instances:
+      httpbin:
+        baseConfig: default
+  timelimiter:
+    configs:
+      default:
+        timeoutDuration: 10s
+    instances:
+      httpbin:
+        baseConfig: default
+
+feign:
+  circuitbreaker:
+    enabled: true
+  client:
+    config:
+      default:
+        connectTimeout: 10000
+        readTimeout: 10000
